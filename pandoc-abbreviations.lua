@@ -1,3 +1,20 @@
+--
+-- pandoc-abbreviationa.lua
+--
+-- a pandoc lua filter for expanding abbreviations in pandoc files.
+--
+-- Specify abbreviations in the yaml metadata block:
+-- 
+-- ---
+-- title: "My document"
+-- author: "John Doe"
+-- abbreviations:
+--    ex: 'First example'
+--    ex2: 'Second **example**'
+-- ...
+--
+-- Or specify abbreviations in a separate abbreviations.yml file.
+
 local yaml_key = "abbreviations"
 local defaults_slug = "abbreviations.yml"
 local default_files = { defaults_slug, os.getenv("HOME") .. "/.pandoc/" .. defaults_slug }
@@ -16,24 +33,26 @@ local function deepcopy(o, seen)
       no[deepcopy(k, seen)] = deepcopy(v, seen)
     end
     setmetatable(no, deepcopy(getmetatable(o), seen))
-  else -- number, string, boolean, etc
+  else
     no = o
   end
   return no
 end
 
 local function read_file(path)
-    local file = io.open(path, "rb") -- r read mode and b binary mode
+    local file = io.open(path, "rb") 
     if not file then return nil end
-    local content = file:read "*a" -- *a or *all reads the whole file
+    local content = file:read "*a"
     file:close()
     return content
 end
 
 local function read_meta(m)
-    for k,v in pairs(m[yaml_key]) do
-        if v.t == "MetaInlines" then
-            abbreviations[k] = v
+    if m[yaml_key] then -- if nil then don't bother
+        for k,v in pairs(m[yaml_key]) do
+            if v.t == "MetaInlines" then
+                abbreviations[k] = v
+            end
         end
     end
 end
@@ -45,12 +64,6 @@ local function read_meta_file(path)
         read_meta(mf_meta)
     end
 end
-
--- Specify abbreviations in yaml metadata:
---
--- abbreviations:
---    ex: 'First example'
---    ex2: 'Second **example**'
 
 function get_vars (meta)
     read_meta(meta)
