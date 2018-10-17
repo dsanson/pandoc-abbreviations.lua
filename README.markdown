@@ -1,7 +1,7 @@
 # pandoc-abbreviations.lua
 
 This is a [pandoc lua
-filter](https://pandoc.org/lua-filters.html) that replaces abbreviations
+filter](https://pandoc.org/lua-filters.html) that expands abbreviations
 specified in the yaml metadata block. For example, supposing `example.md`
 contains the following text: 
 
@@ -36,8 +36,9 @@ It is true, you only live once! So you should visit
 
 If a file with the name `abbreviations.yml` is in the current directory, it
 will also be processed. Likewise, if a file with the name `abbreviations.yml`
-is in `$HOME/.pandoc/`, it will be processed. These files should be formatted
-as pandoc-readable files, e.g.,
+is in `$HOME/.pandoc/`, it will be processed. Each file should contain
+a yaml metadata block, formatted just as it would be if it were in a pandoc
+markdown file:
 
 ```
 ---
@@ -47,21 +48,29 @@ abbreviations:
 ...
 ```
 
-There is no well-defined behavior for handling conflicting abbreviations.
+Abbreviations in the source file take precedence, followed by abbreviations in
+the local `abbreviations.yml` file, followed by abbreviations in
+`$HOME/.pandoc/abbreviations.yml`.
 
 ## Punctuation
 
-The filter tries to be smart about punctuation. (+lol) should get expanded, as
-should +lol, +lol; +lol... But I am sure there are things that won't
-work---+lol, for example.
+Pandoc does most of the heavy lifting for us. The one thing the filter has to
+handle is surrounding (non-markdown related) punctuation, and it tries to do
+that with regexes.
+
+The current regex should handle:
+
+-   trailing punctuation: `+ymmv,`, `+ymmv.`, `+ymmv!`, `+ymmv...` etc.
+-   opening or closing parentheses or brackets: `(+ymmv `, `+ymmv)`, `(+ymmv)`
+-   closing parentheses or brackets followed by punctuation
+-   closing parentheses preceded by punctuation
+
+The current regex does not do very well with m-dashes and n-dashes.
 
 ## Abbreviation Keys
 
 Abbreviation keys do not need to begin with `+`. That's just a convention I am
-borrowing from [pandoc-abbreviations](https://github.com/scokobro/pandoc-abbreviations), which is implemented in python instead of lua. I *think* this implementation should be more reliable. It is certainly more lightweight.
-
-
-
-
-
+borrowing from
+[pandoc-abbreviations](https://github.com/scokobro/pandoc-abbreviations), a
+filter written in python that aims to do much the same thing as this filter.
 
