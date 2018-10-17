@@ -77,8 +77,8 @@ function replace (elem)
   for k, v in pairs(abbreviations) do
       if elem.text == k then
         return v
-      elseif string.find(elem.text, "^[%[%(]?" .. k .. "[%]%)]?%p?$") then
-        local _, _, p1, p2 = string.find(elem.text, "^([%[%(]*)" .. k .. "([%]%)%p]*)$")
+      elseif string.find(elem.text, "^[%[%(—–]*" .. k .. "[%]%)%p…—–]*$") then
+        local _, _, p1, p2 = string.find(elem.text, "^([%[%(—–]*)" .. k .. "([%]%)%p…—–]*)$")
         local r = deepcopy(v)
         if p1  then
             table.insert(r,1,pandoc.Str(p1))
